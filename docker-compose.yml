@@ -1,0 +1,49 @@
+# Path: docker-compose.yml
+version: '3.8'
+
+services:
+  mcpserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: theshop-ai-mcp-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Server settings
+      - THESHOP_SERVER_PORT=8080
+      - THESHOP_SERVER_TIMEOUT=30s
+      
+      # MCP server settings
+      - MCP_SERVER_ENABLED=true
+      - MCP_SERVER_MODE=http
+      - MCP_SERVER_PORT=8080
+      
+      # GitLab settings
+      - THESHOP_GITLAB_URL=https://gitlab.com
+      - THESHOP_GITLAB_TOKEN=${GITLAB_TOKEN}
+      
+      # Notion settings
+      - THESHOP_NOTION_TOKEN=${NOTION_TOKEN}
+      - THESHOP_NOTION_API_KEY=${NOTION_API_KEY}
+      
+      # Figma settings
+      - THESHOP_FIGMA_ACCESS_TOKEN=${FIGMA_ACCESS_TOKEN}
+      - THESHOP_FIGMA_TEAM_ID=${FIGMA_TEAM_ID}
+      
+      # LLM settings
+      - THESHOP_LLM_DEFAULT_MODEL=gpt-3.5-turbo
+      - THESHOP_LLM_DEFAULT_TEMPERATURE=0.7
+      - THESHOP_LLM_PROVIDER=openai
+      - THESHOP_LLM_OPENAI_API_KEY=${OPENAI_API_KEY}
+      - THESHOP_LLM_CLAUDE_API_KEY=${CLAUDE_API_KEY}
+      - THESHOP_LLM_GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - ./configs:/app/configs
+    networks:
+      - theshop-ai-network
+
+networks:
+  theshop-ai-network:
+    driver: bridge

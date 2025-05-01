@@ -1,0 +1,104 @@
+# Path: configs/config.yaml.example
+# theshop-ai-mcp-server 설정 파일
+
+# 서버 설정
+server:
+  port: "8080"
+  timeout: 30s
+
+# MCP 서버 설정
+mcp_server:
+  enabled: true
+  port: "8080"
+  mode: "http"  # "http" 또는 "stdio"
+  base_path: "/mcp"
+  enable_logs: true
+
+# GitLab 설정
+gitlab:
+  url: "https://gitlab.com"
+  token: "${THESHOP_GITLAB_TOKEN}"
+  access_token: "${THESHOP_GITLAB_TOKEN}"
+
+# Jira 설정
+jira:
+  url: "https://your-domain.atlassian.net"
+  username: "${THESHOP_JIRA_USERNAME}"
+  api_token: "${THESHOP_JIRA_API_TOKEN}"
+  project_key: "SHOP"
+
+# Confluence 설정
+confluence:
+  url: "https://your-domain.atlassian.net/wiki"
+  username: "${THESHOP_CONFLUENCE_USERNAME}"
+  api_token: "${THESHOP_CONFLUENCE_API_TOKEN}"
+
+# Notion 설정
+notion:
+  token: "${THESHOP_NOTION_TOKEN}"
+  api_key: "${THESHOP_NOTION_API_KEY}"
+
+# Figma 설정
+figma:
+  access_token: "${THESHOP_FIGMA_ACCESS_TOKEN}"
+  team_id: "${THESHOP_FIGMA_TEAM_ID}"
+  project_id: "${THESHOP_FIGMA_PROJECT_ID}"
+
+# AWS 설정
+aws:
+  region: "ap-northeast-2"
+  access_key_id: "${THESHOP_AWS_ACCESS_KEY_ID}"
+  secret_access_key: "${THESHOP_AWS_SECRET_ACCESS_KEY}"
+
+# LLM 설정
+llm:
+  default_model: "gpt-3.5-turbo"
+  default_temperature: 0.7
+  provider: "openai"  # openai, claude, gemini 등
+  
+  openai:
+    api_key: "${THESHOP_LLM_OPENAI_API_KEY}"
+    org_id: "${THESHOP_LLM_OPENAI_ORG_ID}"
+    default_model: "gpt-3.5-turbo"
+  
+  claude:
+    api_key: "${THESHOP_LLM_CLAUDE_API_KEY}"
+    default_model: "claude-3-haiku-20240307"
+  
+  gemini:
+    api_key: "${THESHOP_LLM_GEMINI_API_KEY}"
+    default_model: "gemini-pro"
+
+# MCP 클라이언트 설정
+mcp_clients:
+  # OpenAI MCP 클라이언트
+  openai:
+    enabled: true
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-openai"]
+    env:
+      OPENAI_API_KEY: "${THESHOP_LLM_OPENAI_API_KEY}"
+    allowed_tools: ["generate_text", "analyze_data"]
+  
+  # GitLab MCP 클라이언트
+  gitlab:
+    enabled: true
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-gitlab"]
+    env:
+      GITLAB_PERSONAL_ACCESS_TOKEN: "${THESHOP_GITLAB_TOKEN}"
+  
+  # Notion MCP 클라이언트
+  notion:
+    enabled: true
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "@suekou/mcp-notion-server"]
+    env:
+      NOTION_API_TOKEN: "${THESHOP_NOTION_TOKEN}"
+      NOTION_MARKDOWN_CONVERSION: "true"
+
+# 로그 레벨 설정
+log_level: "info"  # debug, info, warn, error
