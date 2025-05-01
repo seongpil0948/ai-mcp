@@ -26,3 +26,11 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 )
+
+replace (
+	github.com/theshop/ai/internal/domain => ../domain
+	github.com/theshop/ai/modules/integrations/gitlab => ../../modules/integrations/gitlab
+	github.com/theshop/ai/modules/integrations/jira => ../../modules/integrations/jira
+	github.com/theshop/ai/modules/integrations/llm => ../../modules/integrations/llm
+	github.com/theshop/ai/pkg/mcpclient => ../../pkg/mcpclient
+)

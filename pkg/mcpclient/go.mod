@@ -11,3 +11,5 @@ require (
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
 	github.com/theshop/ai/modules/config v0.0.0 // Add pseudo-version
 )
+
+replace github.com/theshop/ai/modules/config => ../../modules/config

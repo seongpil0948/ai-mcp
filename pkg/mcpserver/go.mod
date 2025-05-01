@@ -17,4 +17,5 @@ require (
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
 )
 
-// Remove all replace directives as go.work handles them
+// Remove all replace directives as go.work handles them -- Re-adding necessary ones
+replace github.com/theshop/ai/modules/config => ../../modules/config

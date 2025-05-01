@@ -3,8 +3,13 @@ module github.com/theshop/ai/modules/core
 go 1.24.2
 
 require (
-	github.com/google/wire v0.6.0
-	github.com/theshop/ai/modules/config v0.0.0 // Add pseudo-version
+	github.com/google/wire                            v0.6.0
+	github.com/theshop/ai/internal/app                v0.0.0 // Add requirement
+	github.com/theshop/ai/modules/config              v0.0.0
+	github.com/theshop/ai/modules/integrations/gitlab v0.0.0 // Add requirement
+	github.com/theshop/ai/modules/integrations/jira    v0.0.0 // Add requirement
+	github.com/theshop/ai/modules/integrations/llm     v0.0.0 // Add requirement
+	github.com/theshop/ai/pkg/mcpclient               v0.0.0 // Add requirement
 )
 
 require (
@@ -28,4 +33,13 @@ require (
 	golang.org/x/text v0.15.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+replace (
+	github.com/theshop/ai/internal/app => ../../internal/app
+	github.com/theshop/ai/modules/config => ../config
+	github.com/theshop/ai/modules/integrations/gitlab => ../integrations/gitlab
+	github.com/theshop/ai/modules/integrations/jira => ../integrations/jira
+	github.com/theshop/ai/modules/integrations/llm => ../integrations/llm
+	github.com/theshop/ai/pkg/mcpclient => ../../pkg/mcpclient
 )

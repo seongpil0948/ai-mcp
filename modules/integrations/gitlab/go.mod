@@ -45,7 +45,6 @@ require (
 )
 
 replace (
-	github.com/theshop/ai => ../../..
 	github.com/theshop/ai/internal/domain => ../../../internal/domain
 	github.com/theshop/ai/modules/config => ../../config
 	github.com/theshop/ai/pkg/mcpserver => ../../../pkg/mcpserver

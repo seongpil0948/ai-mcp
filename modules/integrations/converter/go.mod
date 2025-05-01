@@ -37,3 +37,13 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace (
+	github.com/theshop/ai/modules/integrations/figma => ../figma
+	github.com/theshop/ai/modules/integrations/llm => ../llm
+	github.com/theshop/ai/modules/integrations/notion => ../notion
+	// Add replaces for indirect local dependencies if necessary
+	github.com/theshop/ai/modules/config => ../../config
+	github.com/theshop/ai/pkg/mcpclient => ../../../pkg/mcpclient
+	github.com/theshop/ai/pkg/mcpserver => ../../../pkg/mcpserver
+)

@@ -2,16 +2,6 @@ module github.com/theshop/ai/cmd/mcpserver
 
 go 1.24.2
 
-replace (
-	github.com/theshop/ai => ../..
-	github.com/theshop/ai/internal/domain => ../../internal/domain
-	github.com/theshop/ai/modules/config => ../../modules/config
-	github.com/theshop/ai/modules/integrations/figma => ../../modules/integrations/figma
-	github.com/theshop/ai/modules/integrations/gitlab => ../../modules/integrations/gitlab
-	github.com/theshop/ai/modules/integrations/notion => ../../modules/integrations/notion
-	github.com/theshop/ai/pkg/mcpserver => ../../pkg/mcpserver
-)
-
 require (
 	github.com/theshop/ai/modules/config v0.0.0
 	github.com/theshop/ai/modules/integrations/figma v0.0.0
@@ -55,4 +45,12 @@ require (
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+replace (
+	github.com/theshop/ai/modules/config => ../../modules/config
+	github.com/theshop/ai/modules/integrations/figma => ../../modules/integrations/figma
+	github.com/theshop/ai/modules/integrations/gitlab => ../../modules/integrations/gitlab
+	github.com/theshop/ai/modules/integrations/notion => ../../modules/integrations/notion
+	github.com/theshop/ai/pkg/mcpserver => ../../pkg/mcpserver
 )

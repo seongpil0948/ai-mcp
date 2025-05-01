@@ -1,8 +1,15 @@
 module github.com/theshop/ai/internal/transport/http/handlers
 
-go 1.21
+go 1.24.2 // Updated Go version
 
-require github.com/gin-gonic/gin v1.9.1
+require (
+	github.com/gin-gonic/gin v1.9.1
+	github.com/theshop/ai/internal/app                   v0.0.0 // Add requirement
+	github.com/theshop/ai/internal/domain                v0.0.0 // Add requirement
+	github.com/theshop/ai/modules/integrations/gitlab v0.0.0 // Add requirement
+	github.com/theshop/ai/modules/integrations/jira    v0.0.0 // Add requirement
+	github.com/theshop/ai/modules/integrations/llm     v0.0.0 // Add requirement
+)
 
 require (
 	github.com/bytedance/sonic v1.9.1 // indirect
@@ -29,4 +36,12 @@ require (
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+replace (
+	github.com/theshop/ai/internal/app => ../../app
+	github.com/theshop/ai/internal/domain => ../../domain
+	github.com/theshop/ai/modules/integrations/gitlab => ../../../modules/integrations/gitlab
+	github.com/theshop/ai/modules/integrations/jira => ../../../modules/integrations/jira
+	github.com/theshop/ai/modules/integrations/llm => ../../../modules/integrations/llm
 )
