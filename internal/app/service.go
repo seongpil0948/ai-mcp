@@ -5,15 +5,13 @@ import (
 	"fmt"
 
 	"github.com/theshop/ai/internal/domain"
-	"github.com/theshop/ai/modules/integrations/gitlab"
-	"github.com/theshop/ai/modules/integrations/jira"
-	"github.com/theshop/ai/modules/integrations/llm"
+	"github.com/theshop/ai/modules/integrations"
 	"github.com/theshop/ai/pkg/mcpclient"
 )
 
 // IntegrationService 통합 서비스
 type IntegrationService struct {
-	gitlabClient gitlab.Client
+	gitlabClient integrations.gitlab.Client
 	jiraClient   jira.Client
 	llmService   llm.Service
 	workspaceMgr WorkspaceManager

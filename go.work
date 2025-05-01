@@ -1,16 +1,10 @@
-go 1.24
+go 1.24.2
 
 use (
 	.
 	./internal
 	./modules/config
 	./modules/core
-	./modules/integrations/aws
-	./modules/integrations/confluence
-	./modules/integrations/filesystem
-	./modules/integrations/gitlab
-	./modules/integrations/jira
-	./modules/integrations/llm
-	./modules/integrations/notion
+	./modules/integrations
 	./pkg/mcpclient
 )

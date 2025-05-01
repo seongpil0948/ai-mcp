@@ -1,8 +1,8 @@
 module github.com/theshop/ai/pkg/mcpclient
 
-go 1.24
+go 1.24.2
 
-require github.com/mark3labs/mcp-go v0.24.1
+require github.com/mark3labs/mcp-go v0.25.0
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

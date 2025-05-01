@@ -1,11 +1,11 @@
 module github.com/theshop/ai/internal
 
-go 1.24
+go 1.24.2
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/uuid v1.6.0
-	github.com/theshop/ai/modules/integrations/gitlab v0.0.0-00010101000000-000000000000
+	github.com/theshop/ai/modules/integrations v0.0.0-00010101000000-000000000000
 	github.com/theshop/ai/modules/integrations/jira v0.0.0-00010101000000-000000000000
 	github.com/theshop/ai/modules/integrations/llm v0.0.0-00010101000000-000000000000
 	github.com/theshop/ai/pkg/mcpclient v0.0.0-00010101000000-000000000000
@@ -75,7 +75,7 @@ replace (
 	github.com/theshop/ai/modules/integrations/aws => ../modules/integrations/aws
 	github.com/theshop/ai/modules/integrations/confluence => ../modules/integrations/confluence
 	github.com/theshop/ai/modules/integrations/filesystem => ../modules/integrations/filesystem
-	github.com/theshop/ai/modules/integrations/gitlab => ../modules/integrations/gitlab
+	github.com/theshop/ai/modules/integrations => .././modules/integrations
 	github.com/theshop/ai/modules/integrations/jira => ../modules/integrations/jira
 	github.com/theshop/ai/modules/integrations/llm => ../modules/integrations/llm
 	github.com/theshop/ai/modules/integrations/notion => ../modules/integrations/notion

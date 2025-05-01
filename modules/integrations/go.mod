@@ -1,11 +1,17 @@
-module github.com/theshop/ai/modules/integrations/gitlab
+module github.com/theshop/ai/modules/integrations
 
-go 1.24
+go 1.24.2
+
+replace (
+	github.com/theshop/ai => ../..
+	github.com/theshop/ai/internal => ../../internal
+	github.com/theshop/ai/modules/config => ../config
+)
 
 require (
 	github.com/theshop/ai/internal v0.0.0-00010101000000-000000000000
 	github.com/theshop/ai/modules/config v0.0.0-00010101000000-000000000000
-	github.com/xanzy/go-gitlab v0.96.0
+	github.com/xanzy/go-gitlab v0.115.0
 )
 
 require (
@@ -13,7 +19,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
@@ -38,10 +44,4 @@ require (
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
-
-replace (
-	github.com/theshop/ai => ../../..
-	github.com/theshop/ai/internal => ../../../internal
-	github.com/theshop/ai/modules/config => ../../config
 )

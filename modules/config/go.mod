@@ -1,6 +1,6 @@
 module github.com/theshop/ai/modules/config
 
-go 1.24
+go 1.24.2
 
 require github.com/spf13/viper v1.18.2
 

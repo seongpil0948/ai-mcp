@@ -80,8 +80,6 @@ make all
 # 모듈 의존성 정리
 make tidy
 
-# 모듈 문제 수정
-make fix-modules
 
 # go.work 동기화
 make sync
@@ -141,8 +139,6 @@ make test
 # Wire 코드 생성
 make wire
 
-# 모든 모듈의 go.mod 파일 수정
-make fix-modules
 
 # Go 의존성 재설치
 make reinstall-deps

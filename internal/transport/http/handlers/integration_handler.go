@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/theshop/ai/internal/app"
-	"github.com/theshop/ai/modules/integrations/gitlab"
+	"github.com/theshop/ai/modules/integrations"
 	"github.com/theshop/ai/modules/integrations/jira"
 
 	"github.com/gin-gonic/gin"

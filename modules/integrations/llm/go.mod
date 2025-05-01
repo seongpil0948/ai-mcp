@@ -1,6 +1,6 @@
 module github.com/theshop/ai/modules/integrations/llm
 
-go 1.24
+go 1.24.2
 
 require (
 	github.com/theshop/ai/modules/config v0.0.0-00010101000000-000000000000
@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
-	github.com/mark3labs/mcp-go v0.24.1 // indirect
+	github.com/mark3labs/mcp-go v0.25.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect

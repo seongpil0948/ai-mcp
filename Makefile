@@ -1,6 +1,6 @@
-.PHONY: all setup clean tidy sync build test wire fix-modules
+.PHONY: all setup clean tidy sync build test wire
 
-all: clean setup fix-modules tidy sync build
+all: clean setup tidy sync build
 
 setup:
 	./scripts/setup.sh
@@ -25,9 +25,6 @@ test:
 wire:
 	cd ./modules/core && go run github.com/google/wire/cmd/wire
 
-fix-modules:
-	./scripts/fix-modules.sh
-
 help:
 	@echo "사용 가능한 명령어:"
 	@echo "  all         : 전체 프로젝트 초기화 및 빌드"
@@ -38,4 +35,3 @@ help:
 	@echo "  build       : 프로젝트 빌드"
 	@echo "  test        : 테스트 실행"
 	@echo "  wire        : Wire 코드 생성"
-	@echo "  fix-modules : 모든 모듈의 go.mod 파일 수정"
