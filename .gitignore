@@ -1,0 +1,10 @@
+bin
+temp_proto
+
+/vendor
+*.log
+*.out
+*.exe
+*.DS_Store
+
+.env*

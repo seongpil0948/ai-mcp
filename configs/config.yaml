@@ -1,0 +1,62 @@
+server:
+  port: "8080"
+  timeout: 30s
+
+jira:
+  url: "https://your-domain.atlassian.net"
+  username: "${THESHOP_JIRA_USERNAME}"
+  api_token: "${THESHOP_JIRA_API_TOKEN}"
+  project_key: "SHOP"
+
+gitlab:
+  url: "https://gitlab.com"
+  token: "${THESHOP_GITLAB_TOKEN}"
+
+confluence:
+  url: "https://your-domain.atlassian.net/wiki"
+  username: "${THESHOP_CONFLUENCE_USERNAME}"
+  api_token: "${THESHOP_CONFLUENCE_API_TOKEN}"
+
+aws:
+  region: "ap-northeast-2"
+  # AWS 자격증명은 환경 변수로 제공
+
+notion:
+  token: "${THESHOP_NOTION_TOKEN}"
+
+llm:
+  default_model: "gpt-3.5-turbo"
+  default_temperature: 0.7
+  provider: "openai"  # openai, claude, gemini 등
+
+mcp_servers:
+  openai:
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-openai"]
+    env:
+      OPENAI_API_KEY: "${THESHOP_OPENAI_API_KEY}"
+  
+  jira:
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-jira"]
+    env:
+      JIRA_API_MAIL: "${THESHOP_JIRA_USERNAME}"
+      JIRA_API_KEY: "${THESHOP_JIRA_API_TOKEN}"
+      JIRA_URL: "${THESHOP_JIRA_URL}"
+  
+  gitlab:
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-gitlab"]
+    env:
+      GITLAB_PERSONAL_ACCESS_TOKEN: "${THESHOP_GITLAB_TOKEN}"
+  
+  notion:
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "@suekou/mcp-notion-server"]
+    env:
+      NOTION_API_TOKEN: "${THESHOP_NOTION_TOKEN}"
+      NOTION_MARKDOWN_CONVERSION: "true"

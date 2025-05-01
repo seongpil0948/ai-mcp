@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../../../../Monitoring/otel-kafka-pg"
+		},
+		{
+			"path": "../.."
+		}
+	],
+	"settings": {}
+}
