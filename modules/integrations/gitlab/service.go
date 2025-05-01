@@ -8,16 +8,16 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/theshop/ai/pkg/mcpserver"
-	"github.com/xanzy/go-gitlab"
+	gitlab "github.com/xanzy/go-gitlab" // Ensure alias is present and correct
 )
 
 // Service represents a service for interacting with GitLab
 type Service struct {
-	client Client
+	client Client // This should now resolve to the interface in client.go
 }
 
 // NewService creates a new GitLab service
-func NewService(client Client) *Service {
+func NewService(client Client) *Service { // Parameter type should resolve
 	return &Service{
 		client: client,
 	}
@@ -338,12 +338,13 @@ func (s *Service) handleGitLabListMergeRequests(ctx context.Context, args map[st
 		state = stateArg
 	}
 
-	// In a real implementation, this would use options from the arguments
-	// to filter the merge requests
+	// Use the imported alias 'gitlab'
 	listOptions := &gitlab.ListProjectMergeRequestsOptions{
 		State: &state,
+		// Add other options based on args if needed (e.g., Scope)
 	}
 
+	// Ensure s.client interface has ListMergeRequests (added in client.go changes)
 	mergeRequests, err := s.client.ListMergeRequests(ctx, projectID, listOptions)
 	if err != nil {
 		return mcpserver.CreateToolError(fmt.Sprintf("Failed to list merge requests: %v", err)), nil
@@ -384,15 +385,16 @@ func (s *Service) handleGitLabCreateMergeRequest(ctx context.Context, args map[s
 		removeSourceBranch = removeArg
 	}
 
-	opts := MergeRequestOptions{
+	opts := MergeRequestOptions{ // This should now resolve to the struct in client.go
 		SourceBranch:       sourceBranch,
 		TargetBranch:       targetBranch,
 		Title:              title,
 		Description:        description,
 		RemoveSourceBranch: removeSourceBranch,
+		// Map other fields from args if needed
 	}
 
-	mr, err := s.client.CreateMergeRequest(ctx, projectID, opts)
+	mr, err := s.client.CreateMergeRequest(ctx, projectID, opts) // Call the interface method
 	if err != nil {
 		return mcpserver.CreateToolError(fmt.Sprintf("Failed to create merge request: %v", err)), nil
 	}
@@ -462,7 +464,7 @@ func (s *Service) handleGitLabAnalyzeCode(ctx context.Context, args map[string]i
 	}
 
 	// Get the main file content
-	mainContent, err := s.client.GetFileContent(ctx, projectID, filePath, "")
+	_, err := s.client.GetFileContent(ctx, projectID, filePath, "") // Assign to blank identifier if not used
 	if err != nil {
 		return mcpserver.CreateToolError(fmt.Sprintf("Failed to get file content: %v", err)), nil
 	}
@@ -503,7 +505,7 @@ func (s *Service) handleGitLabAnalyzeCode(ctx context.Context, args map[string]i
 		"analysis_type":    analysisType,
 		"file_type":        determineFileType(getFileExtension(filePath)),
 		"additional_files": len(additionalContents),
-		"recommendations":  generateMockRecommendations(context, filePath),
+		"recommendations":  generateMockRecommendations(context, filePath), // Corrected variable name
 	}
 
 	return mcpserver.CreateToolResultJSON(result)

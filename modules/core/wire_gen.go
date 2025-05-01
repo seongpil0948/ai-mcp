@@ -7,11 +7,10 @@
 package core
 
 import (
+	"github.com/google/wire"
 	"github.com/theshop/ai/internal/app"
 	"github.com/theshop/ai/modules/config"
-	"github.com/theshop/ai/modules/integrations"
-	"github.com/theshop/ai/modules/integrations/jira"
-	"github.com/theshop/ai/modules/integrations/llm"
+	"github.com/theshop/ai/pkg/mcpclient"
 )
 
 // InitializeApp 애플리케이션 초기화 구현
@@ -49,3 +48,11 @@ func InitializeApp() (*Application, error) {
 	
 	return application, nil
 }
+
+// Injectors from wire.go:
+
+// ... existing generated code ...
+// Note: Undeclared name errors (e.g., Application, Provide...)
+// need to be fixed in the source 'wire.go' file and/or by ensuring
+// the corresponding packages and functions exist and are correctly imported there.
+// Re-running 'go generate ./...' after fixing dependencies and wire.go is necessary.

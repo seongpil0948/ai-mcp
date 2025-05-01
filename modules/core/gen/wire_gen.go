@@ -7,51 +7,36 @@
 package gen
 
 import (
-	"context"
-	"fmt"
-
 	"github.com/google/wire"
 	"github.com/theshop/ai/internal/app"
 	"github.com/theshop/ai/modules/config"
 	"github.com/theshop/ai/modules/core"
-	"github.com/theshop/ai/modules/integrations"
-	"github.com/theshop/ai/modules/integrations/jira"
+	"github.com/theshop/ai/modules/integrations/gitlab"
+	"github.com/theshop/ai/modules/integrations/jira" // Keep if used by generated code
 	"github.com/theshop/ai/modules/integrations/llm"
-	"github.com/theshop/ai/pkg/mcpclient"
 )
 
-// InitializeApp 애플리케이션 초기화 구현
-func InitializeApp() (*core.Application, error) {
-	configConfig, err := config.NewConfig()
+// Injectors from wire.go:
+
+func InitializeApplication(cfg *config.Config) (*core.Application, error) {
+	// ... generated code will be updated by 'go generate' ...
+	// Example structure after generation:
+	workspaceManager := core.ProvideWorkspaceManager() // Assuming definition exists
+	client, err := core.ProvideGitLabClient(cfg)
 	if err != nil {
 		return nil, err
 	}
-	
-	workspaceManager := core.ProvideWorkspaceManager()
-	
-	jiraClient, err := jira.NewClient(configConfig)
+	jiraClient, err := core.ProvideJiraClient(cfg) // Assuming definition exists
 	if err != nil {
 		return nil, err
 	}
-	
-	gitLabClient, err := core.ProvideGitLabClient(configConfig)
-	if err != nil {
-		return nil, err
-	}
-	
-	clientMap, err := core.ProvideMCPClients(configConfig)
-	if err != nil {
-		return nil, err
-	}
-	
-	mcpLLMService, err := core.ProvideLLMService(clientMap, configConfig)
-	if err != nil {
-		return nil, err
-	}
-	
-	integrationService := app.NewIntegrationService(jiraClient, gitLabClient, workspaceManager)
-	
-	application := core.ProvideApplication(configConfig, jiraClient, gitLabClient, mcpLLMService, workspaceManager, integrationService, clientMap)
-	
+	service := core.ProvideLLMService() // Assuming definition exists
+	mapStringMCPClient := core.ProvideMCPClients() // Assuming definition exists
+	integrationService := app.NewIntegrationService(client, jiraClient, service, workspaceManager, mapStringMCPClient)
+	application := core.ProvideApplication(integrationService) // Assuming definition exists
 	return application, nil
 }
+
+// wire.go:
+
+// ... providers from wire.go will be listed here ...

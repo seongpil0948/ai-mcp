@@ -98,7 +98,7 @@ func (c *NotionToFigmaConverter) ConvertPageToFigma(
 	result.FigmaFileURL = fmt.Sprintf("https://www.figma.com/file/%s", file.MainFileKey)
 
 	// Step 4: Process the content and create a design plan using LLM
-	designPlan, err := c.createDesignPlan(ctx, page, blocks.Results, opts)
+	_, err = c.createDesignPlan(ctx, page, blocks.Results, opts)
 	if err != nil {
 		result.ErrorMessage = fmt.Sprintf("Failed to create design plan: %v", err)
 		return result, err

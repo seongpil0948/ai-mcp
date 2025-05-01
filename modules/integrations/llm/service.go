@@ -3,10 +3,14 @@ package llm
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/theshop/ai/modules/config"
 	"github.com/theshop/ai/pkg/mcpclient"
+	"google.golang.org/protobuf/types/known/structpb" // Import structpb
 )
 
 // GenerateOptions 텍스트 생성 옵션
@@ -138,3 +142,76 @@ func (s *MCPLLMService) AnalyzeData(ctx context.Context, data []byte, query stri
 		System: "You are a data analysis expert. Answer questions concisely based on the provided data.",
 	})
 }
+
+func (s *Service) callTool(ctx context.Context, toolCall *mcp.ToolCall) (*mcp.CallToolResult, error) {
+	// ... existing code ...
+
+	inputStruct, err := structpb.NewStruct(inputMap) // Convert map to structpb.Struct
+	if err != nil {
+		log.Printf("Error converting input map to struct: %v", err)
+        errorStruct, _ := structpb.NewStruct(map[string]interface{}{"message": fmt.Sprintf("Internal error: failed to prepare tool input: %v", err)})
+		return &mcp.CallToolResult{
+            ToolName: toolCall.GetName(),
+            Result: &mcp.CallToolResult_Error{Error: errorStruct},
+        }, nil
+	}
+
+
+	req := &mcp.CallToolRequest{
+		ToolName: toolCall.GetName(),
+		Input:    inputStruct, // Pass structpb.Struct
+	}
+
+	log.Printf("Calling tool '%s' via MCP client '%s'", req.GetToolName(), clientName)
+	result, err := client.CallTool(ctx, req)
+	if err != nil {
+		log.Printf("Error calling tool '%s' via MCP client '%s': %v", req.GetToolName(), clientName, err)
+        // This 'err' is likely a transport error, return it directly
+		return nil, fmt.Errorf("transport error calling tool %s: %w", req.GetToolName(), err)
+	}
+
+    // Check if the result itself contains an error from the tool execution
+    if toolErr := result.GetError(); toolErr != nil {
+         log.Printf("Tool '%s' returned error: %v", req.GetToolName(), toolErr.AsMap())
+         // Return the result containing the error, but nil for the Go error
+         return result, nil
+    }
+
+
+	log.Printf("Tool '%s' called successfully via MCP client '%s'", req.GetToolName(), clientName)
+	return result, nil
+}
+
+
+func (s *Service) processToolCalls(ctx context.Context, toolCalls []*mcp.ToolCall) ([]*mcp.Content, error) {
+	// ... existing code ...
+		if result == nil {
+			// Handle case where callTool returned a transport error (err != nil)
+			log.Printf("Skipping result processing for tool %s due to transport error: %v", toolCall.GetName(), callErr)
+			// Optionally create an error content block
+			errorMap := map[string]interface{}{"message": fmt.Sprintf("Failed to call tool %s: %v", toolCall.GetName(), callErr)}
+			errorStruct, _ := structpb.NewStruct(errorMap)
+			toolResults = append(toolResults, mcp.NewToolResultContent(toolCall.GetId(), toolCall.GetName(), errorStruct, true)) // Indicate error
+			continue
+		}
+
+        // Check if the result contains a tool execution error
+        if toolErrStruct := result.GetError(); toolErrStruct != nil {
+            log.Printf("Tool %s execution failed: %v", toolCall.GetName(), toolErrStruct.AsMap())
+			toolResults = append(toolResults, mcp.NewToolResultContent(toolCall.GetId(), toolCall.GetName(), toolErrStruct, true)) // Indicate error
+        } else if resultContent := result.GetContent(); resultContent != nil {
+		    // Successful tool call, add result content
+		    log.Printf("Tool %s execution successful", toolCall.GetName())
+			toolResults = append(toolResults, mcp.NewToolResultContent(toolCall.GetId(), toolCall.GetName(), resultContent, false)) // Indicate success
+        } else {
+            // Handle unexpected case where result has neither error nor content
+            log.Printf("Warning: Tool %s returned result with no error and no content", toolCall.GetName())
+            errorMap := map[string]interface{}{"message": fmt.Sprintf("Tool %s returned an empty result", toolCall.GetName())}
+            errorStruct, _ := structpb.NewStruct(errorMap)
+            toolResults = append(toolResults, mcp.NewToolResultContent(toolCall.GetId(), toolCall.GetName(), errorStruct, true)) // Indicate error
+        }
+	}
+	// ... existing code ...
+}
+
+// ... rest of the file ...

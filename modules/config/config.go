@@ -24,7 +24,7 @@ type JiraConfig struct {
 
 // GitLabConfig GitLab 연동 관련 설정
 type GitLabConfig struct {
-	URL         string `mapstructure:"url"`
+	BaseURL     string `mapstructure:"base_url"` // Added BaseURL
 	Token       string `mapstructure:"token"`
 	AccessToken string `mapstructure:"access_token"`
 }
@@ -51,9 +51,9 @@ type NotionConfig struct {
 
 // LLMConfig LLM 관련 설정
 type LLMConfig struct {
-	DefaultModel       string  `mapstructure:"default_model"`
-	DefaultTemperature float64 `mapstructure:"default_temperature"`
-	Provider           string  `mapstructure:"provider"`
+	DefaultModel       string       `mapstructure:"default_model"`
+	DefaultTemperature float64      `mapstructure:"default_temperature"`
+	Provider           string       `mapstructure:"provider"`
 	OpenAI             OpenAIConfig `mapstructure:"openai"`
 	Claude             ClaudeConfig `mapstructure:"claude"`
 	Gemini             GeminiConfig `mapstructure:"gemini"`
@@ -61,71 +61,79 @@ type LLMConfig struct {
 
 // OpenAIConfig OpenAI 설정
 type OpenAIConfig struct {
-	APIKey      string `mapstructure:"api_key"`
-	OrgID       string `mapstructure:"org_id"`
+	APIKey       string `mapstructure:"api_key"`
+	OrgID        string `mapstructure:"org_id"`
 	DefaultModel string `mapstructure:"default_model"`
 }
 
 // ClaudeConfig Claude 설정
 type ClaudeConfig struct {
-	APIKey      string `mapstructure:"api_key"`
+	APIKey       string `mapstructure:"api_key"`
 	DefaultModel string `mapstructure:"default_model"`
 }
 
 // GeminiConfig Gemini 설정
 type GeminiConfig struct {
-	APIKey      string `mapstructure:"api_key"`
+	APIKey       string `mapstructure:"api_key"`
 	DefaultModel string `mapstructure:"default_model"`
 }
 
-// MCPServerConfig MCP 서버 설정
-type MCPServerConfig struct {
-	URL     string            `mapstructure:"url"`
-	Type    string            `mapstructure:"type"`
-	Command string            `mapstructure:"command"`
-	Args    []string          `mapstructure:"args"`
-	Env     map[string]string `mapstructure:"env"`
+type Config struct {
+	Server     ServerConfig                     `mapstructure:"server"`
+	Jira       JiraConfig                       `mapstructure:"jira"`
+	GitLab     GitLabConfig                     `mapstructure:"gitlab"`
+	Confluence ConfluenceConfig                 `mapstructure:"confluence"`
+	AWS        AWSConfig                        `mapstructure:"aws"`
+	Notion     NotionConfig                     `mapstructure:"notion"`
+	LLM        LLMConfig                        `mapstructure:"llm"`
+	OpenAI     OpenAIConfig                     `mapstructure:"openai"`
+	Claude     ClaudeConfig                     `mapstructure:"claude"`
+	Gemini     GeminiConfig                     `mapstructure:"gemini"`
+	Figma      FigmaConfig                      `mapstructure:"figma"`
+	MCPServer  MCPServerConfig                  `mapstructure:"mcp_server"`
+	MCPClients map[string]MCPServerClientConfig `mapstructure:"mcp_clients"`
 }
 
-// Config 전체 애플리케이션 설정
-type Config struct {
-	Server     ServerConfig               `mapstructure:"server"`
-	Jira       JiraConfig                 `mapstructure:"jira"`
-	GitLab     GitLabConfig               `mapstructure:"gitlab"`
-	Confluence ConfluenceConfig           `mapstructure:"confluence"`
-	AWS        AWSConfig                  `mapstructure:"aws"`
-	Notion     NotionConfig               `mapstructure:"notion"`
-	LLM        LLMConfig                  `mapstructure:"llm"`
-	MCPServers map[string]MCPServerConfig `mapstructure:"mcp_servers"`
+// FigmaConfig Figma 연동 관련 설정
+type FigmaConfig struct {
+	AccessToken string `mapstructure:"access_token"`
+	TeamID      string `mapstructure:"team_id"`
+	ProjectID   string `mapstructure:"project_id"`
 }
 
 // NewConfig 설정 파일 로드 함수
 func NewConfig() (*Config, error) {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./configs")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
+	v := viper.New()
 
-	// 환경 변수 매핑 설정 (THESHOP_JIRA_URL -> jira.url)
-	viper.SetEnvPrefix("THESHOP")
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	// Set defaults
+	v.SetDefault("server.port", "8080")
+	v.SetDefault("server.timeout", 30*time.Second)
+	v.SetDefault("llm.provider", "openai")
 
-	// 기본값 설정
-	viper.SetDefault("server.port", "8080")
-	viper.SetDefault("server.timeout", "30s")
-	viper.SetDefault("llm.default_model", "gpt-3.5-turbo")
-	viper.SetDefault("llm.default_temperature", 0.7)
-	viper.SetDefault("llm.provider", "openai")
+	// Setup viper
+	v.SetConfigName("config")
+	v.SetConfigType("yaml") // or json, toml, etc.
+	v.AddConfigPath(".")
+	v.AddConfigPath("./config")
+	v.AddConfigPath("/etc/theshop-ai/") // Example additional path
+	v.AutomaticEnv()
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_")) // For environment variable mapping
 
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("설정 파일 읽기 오류: %w", err)
+	if err := v.ReadInConfig(); err != nil {
+		// Ignore if config file not found, rely on defaults/env vars
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, fmt.Errorf("failed to read config file: %w", err)
+		}
+		fmt.Println("Config file not found, using defaults and environment variables.")
 	}
 
-	var config Config
-	if err := viper.Unmarshal(&config); err != nil {
-		return nil, fmt.Errorf("설정 언마샬링 오류: %w", err)
+	var cfg Config
+	if err := v.Unmarshal(&cfg); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
-	return &config, nil
+	// Initialize MCP related fields if necessary (based on mcp_config.go logic)
+	// cfg.Initialize() // Assuming an Initialize method exists
+
+	return &cfg, nil
 }

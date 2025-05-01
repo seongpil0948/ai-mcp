@@ -5,33 +5,36 @@ import (
 	"fmt"
 
 	"github.com/theshop/ai/internal/domain"
-	"github.com/theshop/ai/modules/integrations"
+	"github.com/theshop/ai/modules/integrations/gitlab"
+	"github.com/theshop/ai/modules/integrations/jira"
+	"github.com/theshop/ai/modules/integrations/llm"
 	"github.com/theshop/ai/pkg/mcpclient"
 )
 
 // IntegrationService 통합 서비스
 type IntegrationService struct {
-	gitlabClient integrations.gitlab.Client
-	jiraClient   jira.Client
-	llmService   llm.Service
+	gitlabClient gitlab.Client // Use the defined interface type
+	jiraClient   jira.Client   // Use the defined interface type
+	llmService   llm.Service   // Use the defined interface type
 	workspaceMgr WorkspaceManager
 	mcpClients   map[string]mcpclient.MCPClient
 }
 
 // NewIntegrationService 새 통합 서비스 생성
 func NewIntegrationService(
-	gitlabClient gitlab.Client,
-	jiraClient jira.Client,
-	llmService llm.Service,
-	workspaceMgr WorkspaceManager,
-	mcpClients map[string]mcpclient.MCPClient,
+	glClient gitlab.Client,
+	jClient jira.Client,
+	llmSvc llm.Service,
+	wsMgr WorkspaceManager,
+	mcpMap map[string]mcpclient.MCPClient,
 ) *IntegrationService {
+	// Assuming line 15 was inside this return statement
 	return &IntegrationService{
-		gitlabClient: gitlabClient,
-		jiraClient:   jiraClient,
-		llmService:   llmService,
-		workspaceMgr: workspaceMgr,
-		mcpClients:   mcpClients,
+		gitlabClient: glClient, // Ensure no trailing dots or missing commas
+		jiraClient:   jClient,
+		llmService:   llmSvc,
+		workspaceMgr: wsMgr,
+		mcpClients:   mcpMap, // Check line 15 was here or nearby
 	}
 }
 

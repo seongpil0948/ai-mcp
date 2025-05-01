@@ -2,7 +2,7 @@ module github.com/theshop/ai/modules/config
 
 go 1.24.2
 
-require github.com/spf13/viper v1.18.2
+require github.com/spf13/viper v1.18.2 // Add viper dependency
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect

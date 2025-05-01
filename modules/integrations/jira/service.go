@@ -3,52 +3,36 @@ package jira
 
 import (
 	"context"
+
+	"github.com/theshop/ai/internal/domain"
 )
 
-// Issue는 Jira 이슈 정보를 나타냅니다
-type Issue struct {
-	Key         string
-	Summary     string
-	Description string
-	Status      string
-	// 기타 필드들...
+// JiraService provides higher-level operations on top of the Jira client
+type JiraService struct {
+	client Client
 }
 
-// CreateIssue는 새 Jira 이슈를 생성합니다
-func (c *JiraClient) CreateIssue(ctx context.Context, projectKey string, summary string, description string) (*Issue, error) {
-	// ADF 형식의 설명 생성
-	adfDesc := map[string]interface{}{
-		"type":    "doc",
-		"version": 1,
-		"content": []map[string]interface{}{
-			{
-				"type": "paragraph",
-				"content": []map[string]interface{}{
-					{
-						"type": "text",
-						"text": description,
-					},
-				},
-			},
-		},
+// NewJiraService creates a new Jira service
+func NewJiraService(client Client) *JiraService {
+	return &JiraService{
+		client: client,
 	}
+}
 
-	// 요청 본문 구성
-	/*
-		requestBody := map[string]interface{}{
-			"fields": map[string]interface{}{
-				"project": map[string]string{
-					"key": projectKey,
-				},
-				"summary":     summary,
-				"description": adfDesc,
-				"issuetype": map[string]string{
-					"name": "Task",
-				},
-			},
-		}
-	*/
+// GetIssue retrieves an issue from Jira
+func (s *JiraService) GetIssue(ctx context.Context, issueKey string) (*domain.JiraIssue, error) {
+	return s.client.GetIssue(ctx, issueKey)
+}
 
-	// API 호출 구현...
-	return &Issue{ /* ... */ }, nil
+// CreateIssueWithService creates a Jira issue using the service
+// This is a different method from the client's CreateIssue
+func (s *JiraService) CreateIssueWithService(ctx context.Context, projectKey, summary, description string) (*domain.JiraIssue, error) {
+	// ADF description creation logic moved to client.CreateIssue
+	// Remove unused variable:
+	// adfDesc := map[string]interface{}{ ... }
+
+	// You can add additional service-level logic here if needed
+	// e.g., validation, logging, etc.
+
+	return s.client.CreateIssue(ctx, projectKey, summary, description)
 }

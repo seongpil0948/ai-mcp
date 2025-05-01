@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/theshop/ai/modules/config"
 	"github.com/theshop/ai/modules/integrations/figma"
@@ -18,10 +19,9 @@ import (
 )
 
 var (
-	configPath  = flag.String("config", "configs/config.yaml", "Path to config file")
-	serverMode  = flag.String("mode", "", "Server mode (http or stdio, overrides config)")
-	serverPort  = flag.String("port", "", "Server port for HTTP mode (overrides config)")
-	debugMode   = flag.Bool("debug", false, "Enable debug logging")
+	httpAddr    = flag.String("http", "", "HTTP service address (e.g., ':8080')")
+	stdio       = flag.Bool("stdio", false, "Use stdio transport")
+	configPath  = flag.String("config", "config.yaml", "Path to config file")
 	showVersion = flag.Bool("version", false, "Show version and exit")
 )
 
@@ -40,99 +40,165 @@ func main() {
 
 	log.Printf("Starting %s v%s", appName, appVersion)
 
+	if (*httpAddr == "" && !*stdio) || (*httpAddr != "" && *stdio) {
+		fmt.Println("Error: Please specify exactly one transport: -http ADDR or -stdio")
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	// Load configuration
-	cfg, err := config.LoadConfig()
+	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Apply command line overrides
-	if *serverMode != "" {
-		cfg.MCPServer.Mode = *serverMode
+	// Initialize services/integrations based on config
+	var handlers []mcpserver.ToolHandler
+	if cfg.Integrations.GitLab.Token != "" {
+		gitlabService, err := gitlab.NewService(&cfg.Integrations.GitLab)
+		if err != nil {
+			log.Printf("Failed to initialize GitLab service: %v", err)
+		} else {
+			handlers = append(handlers, gitlabService)
+			log.Println("GitLab service initialized")
+		}
 	}
-	if *serverPort != "" {
-		cfg.MCPServer.Port = *serverPort
+	if cfg.Integrations.Figma.Token != "" {
+		figmaService, err := figma.NewService(&cfg.Integrations.Figma)
+		if err != nil {
+			log.Printf("Failed to initialize Figma service: %v", err)
+		} else {
+			handlers = append(handlers, figmaService)
+			log.Println("Figma service initialized")
+		}
+	}
+	if cfg.Integrations.Notion.Token != "" {
+		notionService, err := notion.NewService(&cfg.Integrations.Notion)
+		if err != nil {
+			log.Printf("Failed to initialize Notion service: %v", err)
+		} else {
+			handlers = append(handlers, notionService)
+			log.Println("Notion service initialized")
+		}
 	}
 
-	// Create context with cancellation
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Initialize MCP server
-	mcpSrv := mcpserver.NewMCPServer(appName, appVersion)
-
-	// Register integrations
-	if err := registerIntegrations(ctx, mcpSrv, cfg); err != nil {
-		log.Fatalf("Failed to register integrations: %v", err)
+	if len(handlers) == 0 {
+		log.Fatalf("No integration services initialized. Check config.")
 	}
 
-	// Set up signal handling
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	// Combine handlers if multiple are active
+	combinedHandler := mcpserver.NewCombinedToolHandler(handlers...)
+
+	// Create MCP Server
+	server := mcpserver.New(combinedHandler)
+
+	// Register transports based on flags
+	if *httpAddr != "" {
+		if err := server.RegisterHTTPTransport(*httpAddr, "/mcp"); err != nil {
+			log.Fatalf("Failed to register HTTP transport: %v", err)
+		}
+	}
+	if *stdio {
+		if err := server.RegisterStdioTransport(); err != nil {
+			log.Fatalf("Failed to register Stdio transport: %v", err)
+		}
+	}
+
+	// Start server in a goroutine
 	go func() {
-		sig := <-sigChan
-		log.Printf("Received signal %v, shutting down", sig)
-		cancel()
+		if err := server.Run(); err != nil {
+			log.Printf("Server run error: %v", err)
+		}
 	}()
 
-	// Start the server in the appropriate mode
-	switch cfg.MCPServer.Mode {
-	case "http":
-		transport := mcpserver.NewHTTPTransport(cfg.MCPServer.Port)
-		log.Printf("Starting HTTP server on port %s", cfg.MCPServer.Port)
-		if err := mcpSrv.Start(ctx, transport); err != nil && err != context.Canceled {
-			log.Fatalf("HTTP server error: %v", err)
-		}
-	case "stdio":
-		transport := mcpserver.NewStdioTransport()
-		log.Printf("Starting stdio server")
-		if err := mcpSrv.Start(ctx, transport); err != nil && err != context.Canceled {
-			log.Fatalf("Stdio server error: %v", err)
-		}
-	default:
-		log.Fatalf("Unknown server mode: %s", cfg.MCPServer.Mode)
+	// Graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown signal received...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Stop(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
-	log.Println("Server shutdown complete")
+	log.Println("Server exiting")
 }
 
-// registerIntegrations registers all integrations with the MCP server
-func registerIntegrations(ctx context.Context, mcpSrv *mcpserver.MCPServer, cfg *config.Config) error {
-	// Register GitLab integration
-	if gitlabClient, err := gitlab.NewClient(&cfg.GitLab); err == nil {
-		gitlabService := gitlab.NewService(gitlabClient)
-		if err := gitlabService.RegisterTools(mcpSrv); err != nil {
-			log.Printf("Warning: Failed to register GitLab tools: %v", err)
-		} else {
-			log.Println("Registered GitLab integration")
-		}
-	} else {
-		log.Printf("Warning: Failed to initialize GitLab client: %v", err)
-	}
+// Helper function to combine multiple ToolHandlers (add this to mcpserver package or here)
+// Example implementation:
+/*
+package mcpserver
 
-	// Register Notion integration
-	if notionClient, err := notion.NewClient(&cfg.Notion); err == nil {
-		notionService := notion.NewService(notionClient)
-		if err := notionService.RegisterTools(mcpSrv); err != nil {
-			log.Printf("Warning: Failed to register Notion tools: %v", err)
-		} else {
-			log.Println("Registered Notion integration")
-		}
-	} else {
-		log.Printf("Warning: Failed to initialize Notion client: %v", err)
-	}
+import (
+	"context"
+	"fmt"
+	"github.com/mark3labs/mcp-go/mcp"
+	"sync"
+)
 
-	// Register Figma integration
-	if figmaClient, err := figma.NewClient(&cfg.Figma); err == nil {
-		figmaService := figma.NewService(figmaClient, cfg.Figma.TeamID)
-		if err := figmaService.RegisterTools(mcpSrv); err != nil {
-			log.Printf("Warning: Failed to register Figma tools: %v", err)
-		} else {
-			log.Println("Registered Figma integration")
-		}
-	} else {
-		log.Printf("Warning: Failed to initialize Figma client: %v", err)
-	}
-
-	return nil
+type CombinedToolHandler struct {
+	handlers []ToolHandler
+	toolMap  map[string]ToolHandler
+	mapOnce  sync.Once
+	mapErr   error
 }
+
+func NewCombinedToolHandler(handlers ...ToolHandler) *CombinedToolHandler {
+	return &CombinedToolHandler{handlers: handlers}
+}
+
+func (c *CombinedToolHandler) buildMap(ctx context.Context) error {
+	c.mapOnce.Do(func() {
+		c.toolMap = make(map[string]ToolHandler)
+		for _, h := range c.handlers {
+			tools, err := h.GetTools(ctx)
+			if err != nil {
+				c.mapErr = fmt.Errorf("failed to get tools from a handler: %w", err)
+				return
+			}
+			for _, t := range tools {
+				if _, exists := c.toolMap[t.GetName()]; exists {
+					c.mapErr = fmt.Errorf("duplicate tool name detected: %s", t.GetName())
+					return
+				}
+				c.toolMap[t.GetName()] = h
+			}
+		}
+	})
+	return c.mapErr
+}
+
+
+func (c *CombinedToolHandler) GetTools(ctx context.Context) ([]*mcp.Tool, error) {
+	if err := c.buildMap(ctx); err != nil {
+		return nil, err
+	}
+	var allTools []*mcp.Tool
+	// This could be optimized by storing the combined list during buildMap
+	for _, h := range c.handlers {
+        tools, err := h.GetTools(ctx) // Call again or use stored list
+        if err != nil {
+            return nil, fmt.Errorf("failed to get tools from a handler during combined get: %w", err)
+        }
+        allTools = append(allTools, tools...)
+    }
+	return allTools, nil
+}
+
+func (c *CombinedToolHandler) CallTool(ctx context.Context, toolName string, input map[string]interface{}) (map[string]interface{}, error) {
+	if err := c.buildMap(ctx); err != nil {
+		return nil, err
+	}
+	handler, ok := c.toolMap[toolName]
+	if !ok {
+		return nil, fmt.Errorf("tool '%s' not found", toolName)
+	}
+	return handler.CallTool(ctx, toolName, input)
+}
+
+var _ ToolHandler = (*CombinedToolHandler)(nil)
+
+*/

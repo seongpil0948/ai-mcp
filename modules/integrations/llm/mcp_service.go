@@ -444,6 +444,34 @@ Using this database schema:
 	}), nil
 }
 
+// GenerateCodeReviewComment generates a code review comment using LLM
+func (s *MCPService) GenerateCodeReviewComment(ctx context.Context, req *mcp.GenerateCodeReviewCommentRequest) (*mcp.GenerateCodeReviewCommentResponse, error) {
+	prompt := fmt.Sprintf(
+		"Please review the following code diff and provide constructive feedback as a comment. Focus on potential bugs, improvements, and adherence to best practices.\n\n"+
+			"File: %s\n"+
+			"Diff:\n```diff\n%s\n```\n\n"+
+			"Guidelines:\n"+
+			"- Be specific and provide actionable suggestions.\n"+
+			"- If suggesting code changes, provide clear examples.\n"+
+			"- Maintain a positive and collaborative tone.\n"+
+			"- Consider context if available (e.g., related issue description: %s).",
+		req.GetFileName(),
+		req.GetDiff(),
+		req.GetContext(), // Assuming context might be relevant, adjust if needed
+	)
+
+	comment, err := s.service.GenerateText(ctx, prompt, GenerateOptions{
+		Model: "code-review-model",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate code review comment: %w", err)
+	}
+
+	return &mcp.GenerateCodeReviewCommentResponse{
+		Comment: comment,
+	}, nil
+}
+
 // Helper functions
 
 // extractVariableNames extracts variable names from LLM suggestions

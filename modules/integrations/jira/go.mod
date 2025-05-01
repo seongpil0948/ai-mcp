@@ -1,10 +1,10 @@
-module github.com/theshop/ai/modules/core
+module github.com/theshop/ai/modules/integrations/jira
 
 go 1.24.2
 
 require (
-	github.com/google/wire v0.6.0
-	github.com/theshop/ai/modules/config v0.0.0 // Add pseudo-version
+	github.com/theshop/ai/internal/domain v0.0.0
+	github.com/theshop/ai/modules/config v0.0.0
 )
 
 require (

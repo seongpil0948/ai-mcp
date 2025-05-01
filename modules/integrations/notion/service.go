@@ -7,6 +7,7 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/theshop/ai/pkg/mcpserver"
+	"google.golang.org/protobuf/types/known/structpb" // Import structpb
 )
 
 // Service represents a service for interacting with Notion
@@ -416,4 +417,99 @@ func (s *Service) handleNotionAppendBlockChildren(ctx context.Context, args map[
 	}
 
 	return mcpserver.CreateToolResultJSON(results)
+}
+
+func (s *Service) GetTools(ctx context.Context) ([]*mcp.Tool, error) {
+	schemaPageProps, _ := structpb.NewStruct(map[string]interface{}{ // Use structpb.NewStruct
+		"type": "object",
+		"properties": map[string]interface{}{
+			"page_id": map[string]interface{}{"type": "string", "description": "The ID of the Notion page."},
+		},
+		"required": []string{"page_id"},
+	})
+	schemaBlockChildrenProps, _ := structpb.NewStruct(map[string]interface{}{ // Use structpb.NewStruct
+		"type": "object",
+		"properties": map[string]interface{}{
+			"block_id": map[string]interface{}{"type": "string", "description": "The ID of the Notion block (page or block)."},
+		},
+		"required": []string{"block_id"},
+	})
+	schemaSearchProps, _ := structpb.NewStruct(map[string]interface{}{ // Use structpb.NewStruct
+		"type": "object",
+		"properties": map[string]interface{}{
+			"query": map[string]interface{}{"type": "string", "description": "The search query."},
+		},
+		"required": []string{"query"},
+	})
+	schemaCreatePageProps, _ := structpb.NewStruct(map[string]interface{}{ // Use structpb.NewStruct
+		"type": "object",
+		"properties": map[string]interface{}{
+			"parent_page_id": map[string]interface{}{"type": "string", "description": "The ID of the parent page."},
+			"title":          map[string]interface{}{"type": "string", "description": "The title of the new page."},
+			"content":        map[string]interface{}{"type": "string", "description": "Markdown content for the page body."},
+		},
+		"required": []string{"parent_page_id", "title"},
+	})
+	schemaAppendBlockProps, _ := structpb.NewStruct(map[string]interface{}{ // Use structpb.NewStruct
+		"type": "object",
+		"properties": map[string]interface{}{
+			"block_id": map[string]interface{}{"type": "string", "description": "The ID of the block (page or block) to append to."},
+			"content":  map[string]interface{}{"type": "string", "description": "Markdown content to append."},
+		},
+		"required": []string{"block_id", "content"},
+	})
+	schemaUpdateBlockProps, _ := structpb.NewStruct(map[string]interface{}{ // Use structpb.NewStruct
+		"type": "object",
+		"properties": map[string]interface{}{
+			"block_id": map[string]interface{}{"type": "string", "description": "The ID of the block to update."},
+			"content":  map[string]interface{}{"type": "string", "description": "The new Markdown content for the block."},
+		},
+		"required": []string{"block_id", "content"},
+	})
+	schemaDeleteBlockProps, _ := structpb.NewStruct(map[string]interface{}{ // Use structpb.NewStruct
+		"type": "object",
+		"properties": map[string]interface{}{
+			"block_id": map[string]interface{}{"type": "string", "description": "The ID of the block to delete."},
+		},
+		"required": []string{"block_id"},
+	})
+
+	tools := []*mcp.Tool{
+		{
+			Name:        "notion_get_page_properties",
+			Description: "Retrieves properties of a specific Notion page.",
+			InputSchema: schemaPageProps, // Assign the structpb.Struct
+		},
+		{
+			Name:        "notion_get_block_children",
+			Description: "Retrieves the children blocks of a specific Notion block (page or regular block).",
+			InputSchema: schemaBlockChildrenProps, // Assign the structpb.Struct
+		},
+		{
+			Name:        "notion_search",
+			Description: "Searches for Notion pages and databases.",
+			InputSchema: schemaSearchProps, // Assign the structpb.Struct
+		},
+		{
+			Name:        "notion_create_page",
+			Description: "Creates a new page in Notion.",
+			InputSchema: schemaCreatePageProps, // Assign the structpb.Struct
+		},
+		{
+			Name:        "notion_append_block_children",
+			Description: "Appends new children blocks (content) to a Notion block.",
+			InputSchema: schemaAppendBlockProps, // Assign the structpb.Struct
+		},
+		{
+			Name:        "notion_update_block",
+			Description: "Updates the content of a specific Notion block.",
+			InputSchema: schemaUpdateBlockProps, // Assign the structpb.Struct
+		},
+		{
+			Name:        "notion_delete_block",
+			Description: "Deletes a specific Notion block.",
+			InputSchema: schemaDeleteBlockProps, // Assign the structpb.Struct
+		},
+	}
+	return tools, nil
 }

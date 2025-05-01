@@ -2,9 +2,23 @@ go 1.24.2
 
 use (
 	.
+	./cmd/api
+	./cmd/mcpserver
 	./internal
+	./internal/app
+	./internal/domain
+	./internal/transport/http/handlers
 	./modules/config
 	./modules/core
 	./modules/integrations
+	./modules/integrations/aws
+	./modules/integrations/confluence
+	./modules/integrations/converter
+	./modules/integrations/figma
+	./modules/integrations/gitlab
+	./modules/integrations/jira
+	./modules/integrations/llm
+	./modules/integrations/notion
 	./pkg/mcpclient
+	./pkg/mcpserver
 )
